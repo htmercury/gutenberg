@@ -102,7 +102,9 @@ export default function DocumentActions( { documentTitle } ) {
 	return (
 		<div
 			className={ classnames( 'edit-site-document-actions', {
+				// Handles slide up and slide down animations
 				'has-secondary-label': !! label,
+				'has-no-secondary-label': ! label,
 			} ) }
 		>
 			{ documentTitle ? (
@@ -124,7 +126,6 @@ export default function DocumentActions( { documentTitle } ) {
 							'edit-site-document-actions__label',
 							'edit-site-document-actions__secondary-item',
 							{
-								// 'is-active': isActive,
 								'is-secondary-title-active': isActive,
 							}
 						) }
