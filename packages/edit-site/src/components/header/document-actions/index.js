@@ -111,7 +111,6 @@ export default function DocumentActions( { documentTitle } ) {
 				<>
 					<div
 						className={ classnames(
-							'edit-site-document-actions__label',
 							'edit-site-document-actions__title',
 							{
 								'is-active': isTitleActive,
@@ -123,7 +122,6 @@ export default function DocumentActions( { documentTitle } ) {
 					</div>
 					<div
 						className={ classnames(
-							'edit-site-document-actions__label',
 							'edit-site-document-actions__secondary-item',
 							{
 								'is-secondary-title-active': isActive,
