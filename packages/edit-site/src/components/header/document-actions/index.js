@@ -89,7 +89,8 @@ export default function DocumentActions( { template } ) {
 
 	// The anchor rect is used to position the dropdown relative to the overall
 	// main title area, not to the chevron button. We use a memo to make sure
-	// the props object reference is the same to avoid re-renders.
+	// the props object reference is the same to avoid re-renders. NOTE: A
+	// limitation of `anchorRect` is that it does not move when resizing.
 	const titleRef = useRef( null );
 	const popoverProps = useMemo(
 		() =>
