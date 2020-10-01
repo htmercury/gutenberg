@@ -42,6 +42,26 @@ const FocusManaged = withConstrainedTabbing(
  */
 const SLOT_NAME = 'Popover';
 
+function offsetIframe( rect, ownerDocument ) {
+	if ( ownerDocument !== document ) {
+		const iframe = Array.from( document.querySelectorAll( 'iframe' ) ).find(
+			( element ) => {
+				return element.contentDocument === ownerDocument;
+			}
+		);
+		const iframeRect = iframe.getBoundingClientRect();
+
+		rect = new window.DOMRect(
+			rect.left + iframeRect.left,
+			rect.top + iframeRect.top,
+			rect.width,
+			rect.height
+		);
+	}
+
+	return rect;
+}
+
 function computeAnchorRect(
 	anchorRefFallback,
 	anchorRect,
@@ -71,12 +91,21 @@ function computeAnchorRect(
 			return;
 		}
 
-		if ( anchorRef instanceof window.Range ) {
-			return getRectangleFromRange( anchorRef );
+		if ( anchorRef.endContainer ) {
+			const { ownerDocument } = anchorRef.endContainer;
+			return offsetIframe(
+				getRectangleFromRange( anchorRef ),
+				ownerDocument
+			);
 		}
 
-		if ( anchorRef instanceof window.Element ) {
-			const rect = anchorRef.getBoundingClientRect();
+		const { ownerDocument } = anchorRef;
+
+		if ( ownerDocument ) {
+			const rect = offsetIframe(
+				anchorRef.getBoundingClientRect(),
+				ownerDocument
+			);
 
 			if ( shouldAnchorIncludePadding ) {
 				return rect;
@@ -88,12 +117,14 @@ function computeAnchorRect(
 		const { top, bottom } = anchorRef;
 		const topRect = top.getBoundingClientRect();
 		const bottomRect = bottom.getBoundingClientRect();
-		const rect = new window.DOMRect(
+		let rect = new window.DOMRect(
 			topRect.left,
 			topRect.top,
 			topRect.width,
 			bottomRect.bottom - topRect.top
 		);
+
+		rect = offsetIframe( rect, top.ownerDocument );
 
 		if ( shouldAnchorIncludePadding ) {
 			return rect;
@@ -424,6 +455,16 @@ const Popover = ( {
 		window.addEventListener( 'click', refreshOnAnimationFrame );
 		window.addEventListener( 'resize', refresh );
 		window.addEventListener( 'scroll', refresh, true );
+
+		Array.from( document.querySelectorAll( 'iframe' ) ).forEach(
+			( element ) => {
+				element.contentWindow.addEventListener(
+					'scroll',
+					refresh,
+					true
+				);
+			}
+		);
 
 		let observer;
 

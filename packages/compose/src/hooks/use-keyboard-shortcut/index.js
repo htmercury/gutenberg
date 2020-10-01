@@ -8,7 +8,12 @@ import { includes, castArray } from 'lodash';
 /**
  * WordPress dependencies
  */
-import { useEffect, useRef } from '@wordpress/element';
+import {
+	useEffect,
+	useRef,
+	createContext,
+	useContext,
+} from '@wordpress/element';
 
 /**
  * A block selection object.
@@ -20,6 +25,8 @@ import { useEffect, useRef } from '@wordpress/element';
  * @property {boolean} [isDisabled]  Disables the keyboard handler if the value is true.
  * @property {Object}  [target]      React reference to the DOM element used to catch the keyboard event.
  */
+
+const WindowContext = createContext();
 
 /**
  * Return true if platform is MacOS.
@@ -52,18 +59,27 @@ function useKeyboardShortcut(
 		eventName = 'keydown',
 		isDisabled = false, // This is important for performance considerations.
 		target,
+		altWindow,
 	} = {}
 ) {
 	const currentCallback = useRef( callback );
 	useEffect( () => {
 		currentCallback.current = callback;
 	}, [ callback ] );
+	const win = useContext( WindowContext );
 
 	useEffect( () => {
 		if ( isDisabled ) {
 			return;
 		}
-		const mousetrap = new Mousetrap( target ? target.current : document );
+
+		let node = ( altWindow || win || window ).document;
+
+		if ( target && target.current ) {
+			node = target.current;
+		}
+
+		const mousetrap = new Mousetrap( node );
 		castArray( shortcuts ).forEach( ( shortcut ) => {
 			const keys = shortcut.split( '+' );
 			// Determines whether a key is a modifier by the length of the string.
@@ -99,5 +115,7 @@ function useKeyboardShortcut(
 		};
 	}, [ shortcuts, bindGlobal, eventName, target, isDisabled ] );
 }
+
+useKeyboardShortcut.WindowContext = WindowContext;
 
 export default useKeyboardShortcut;
